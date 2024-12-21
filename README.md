@@ -41,8 +41,8 @@ To set up the project locally, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/token-techie.git
-   cd token-techie
+   git clone https://github.com/beastdzns/tokentechies.git
+   cd tokentechies
    ```
 
 2. **Install dependencies**:
