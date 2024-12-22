@@ -1,14 +1,21 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { IoChevronDownOutline } from "react-icons/io5";
-import Link from "next/link";
 import { useStore } from '@/store';
 import Input from '@/components/form-elements/input';
 import { Listbox, Transition } from '@headlessui/react';
 import { networkOptions, tokenOptions } from '@/utils/constants';
 import Chip from '@/components/Chip';
 import useCreateBucket from '@/hooks/useCreateBucket';
-import {motion}  from  "framer-motion"
+import { motion } from "framer-motion";
+import axios from 'axios';
+
+const networkChainIds = {
+  arbitrum: 42161,
+  polygon: 137,
+  base: 8453,
+};
+
 export default function Hero() {
   const {
     bucketName,
@@ -21,8 +28,51 @@ export default function Hero() {
   } = useStore();
   const { createBucket } = useCreateBucket();
 
+  // State to store gas fee data
+  const [gasFees, setGasFees] = useState({
+    low: null,
+    medium: null,
+    high: null,
+  });
+
+  // Fetch gas fees based on selected network
+  const fetchGasFees = async (chainId: number) => {
+    try {
+      const apiKey = "26e00aef0ae84df09deae009fa6c34a5"; // Replace with your API key.
+      const apiKeySecret = "1xhqaPBGG4cu8AZ3aRKosEeRU00r0AQ4lJcGaARuI5Y3M7WmVmK4sw"; // Replace with your API key secret.
+      const Auth = Buffer.from(apiKey + ":" + apiKeySecret).toString("base64");
+
+      const { data } = await axios.get(
+        `https://gas.api.infura.io/networks/${chainId}/suggestedGasFees`,
+        {
+          headers: {
+            Authorization: `Basic ${Auth}`,
+          },
+        }
+      );
+
+      setGasFees({
+        low: data.low.suggestedMaxFeePerGas,
+        medium: data.medium.suggestedMaxFeePerGas,
+        high: data.high.suggestedMaxFeePerGas,
+      });
+    } catch (error) {
+      console.log("Error fetching gas fees: ", error);
+    }
+  };
+
+  // Trigger gas fee fetch whenever the selected network changes
+  useEffect(() => {
+    if (selectedNetwork) {
+      const chainId = networkChainIds[selectedNetwork.name.toLowerCase()];
+      if (chainId) {
+        fetchGasFees(chainId);
+      }
+    }
+  }, [selectedNetwork]);
+
   return (
-     <div className="flex flex-col items-center justify-center py-10 md:py-12 bg-gradient-to-r from-blue-900 via-indigo-800 to-purple-700">
+    <div className="flex flex-col items-center justify-center py-10 md:py-12 bg-gradient-to-r from-blue-900 via-indigo-800 to-purple-700">
       {/* Hero Section */}
       <div className="ramp h-auto flex flex-col md:flex-row justify-center items-center px-6 md:px-16 text-white min-h-screen w-full">
         <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left max-w-xl">
@@ -66,7 +116,7 @@ export default function Hero() {
           >
             <button
               onClick={() =>
-                document.getElementById("2").scrollIntoView({ behavior: "smooth" })
+                document.getElementById("2")?.scrollIntoView({ behavior: "smooth" })
               }
               className="px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-full hover:bg-yellow-500 transition-transform transform hover:scale-105 shadow-lg"
             >
@@ -108,7 +158,7 @@ export default function Hero() {
               onChange={(e) => setBucketName(e.target.value)}
             />
           </div>
-          
+
           {/* Network and Tokens Selection */}
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Network Selection */}
@@ -141,8 +191,7 @@ export default function Hero() {
                         <Listbox.Option
                           key={index}
                           className={({ active }) =>
-                            `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
-                              active ? 'bg-gray-600 text-teal-300' : 'text-gray-200'
+                            `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? 'bg-gray-600 text-teal-300' : 'text-gray-200'
                             }`
                           }
                           value={network}
@@ -150,9 +199,8 @@ export default function Hero() {
                           {({ selected }) => (
                             <>
                               <span
-                                className={`block truncate ${
-                                  selected ? 'font-semibold' : 'font-normal'
-                                }`}
+                                className={`block truncate ${selected ? 'font-semibold' : 'font-normal'
+                                  }`}
                               >
                                 {network.name}
                               </span>
@@ -170,7 +218,7 @@ export default function Hero() {
                 </div>
               </Listbox>
             </div>
-            
+
             {/* Token Selection */}
             <div className="lg:w-1/2">
               <label className="text-teal-200 text-sm font-semibold mb-1">
@@ -205,8 +253,7 @@ export default function Hero() {
                         <Listbox.Option
                           key={index}
                           className={({ active }) =>
-                            `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
-                              active ? 'bg-gray-600 text-teal-300' : 'text-gray-200'
+                            `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? 'bg-gray-600 text-teal-300' : 'text-gray-200'
                             }`
                           }
                           value={token}
@@ -214,9 +261,8 @@ export default function Hero() {
                           {({ selected }) => (
                             <>
                               <span
-                                className={`block truncate ${
-                                  selected ? 'font-semibold' : 'font-normal'
-                                }`}
+                                className={`block truncate ${selected ? 'font-semibold' : 'font-normal'
+                                  }`}
                               >
                                 {token.name}
                               </span>
@@ -234,6 +280,18 @@ export default function Hero() {
                 </div>
               </Listbox>
             </div>
+          </div>
+
+          {/* Display Gas Fees */}
+          <div className="mt-6 text-center text-teal-200">
+            {gasFees.low && (
+              <>
+                <h3 className="text-lg font-semibold">Suggested Gas Fees</h3>
+                <p>Low: {gasFees.low} Gwei</p>
+                <p>Medium: {gasFees.medium} Gwei</p>
+                <p>High: {gasFees.high} Gwei</p>
+              </>
+            )}
           </div>
 
           {/* Selected Tokens Display */}
