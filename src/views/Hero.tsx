@@ -9,6 +9,7 @@ import Chip from '@/components/Chip';
 import useCreateBucket from '@/hooks/useCreateBucket';
 import { motion } from "framer-motion";
 import axios from 'axios';
+import Image from 'next/image';
 
 const networkChainIds = {
   arbitrum: 42161,
@@ -132,10 +133,12 @@ export default function Hero() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
         >
-          <img
-            src="cartoon.png"
+          <Image
+            src="/cartoon.png"  // Image path
             alt="Investment Illustration"
             className="w-full max-w-md lg:max-w-lg object-contain rounded-lg"
+            width={500} // Set the width (you can adjust this value)
+            height={500} // Set the height (you can adjust this value)
           />
         </motion.div>
       </div>

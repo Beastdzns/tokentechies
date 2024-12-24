@@ -1,10 +1,9 @@
 import Card from '@/components/card';
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';  // Import useCallback
 import { useContractRead, useAccount } from 'wagmi';
 import { polygonAddress } from '@/utils/constants';
 import factoryABI from '@/utils/contract/factoryABI.json';
-
 
 const buckets = [
   {
@@ -28,14 +27,15 @@ const buckets = [
     desc: 'A case of RWA tokens like Render, tensor',
   },
 ];
-interface bucket {
+
+interface Bucket {
   id: string;
   name: string;
   desc: string;
 }
 
 export default function Deposit() {
-  const [parsedData, setParsedData] = useState<bucket>();
+  const [parsedData, setParsedData] = useState<Bucket>();
   const { address } = useAccount();
   const { data } = useContractRead({
     address: polygonAddress,
@@ -50,23 +50,24 @@ export default function Deposit() {
     },
   });
 
-  const fetchData = async () => {
+  // Define fetchData using useCallback to memoize it
+  const fetchData = useCallback(async () => {
     try {
-      if (data.length > 0) {
+      if (data && data.length > 0) {
         for (let index = 0; index < data.length; index++) {
           console.log(data[index]);
         }
       }
     } catch (error) {
-      return {
-        notFound: true,
-      };
+      console.error('Error fetching data:', error);
     }
-  };
+  }, [data]); // Include 'data' as a dependency of fetchData
 
+  // Effect to call fetchData when 'data' changes
   useEffect(() => {
     fetchData();
-  }, [data]);
+  }, [fetchData]); // Add fetchData as a dependency
+
   return (
     <>
       <Head>
@@ -81,7 +82,7 @@ export default function Deposit() {
         </h1>
         <div className="flex gap-5 flex-wrap">
           {buckets.map((bucket) => {
-            console.log('Bucet is', bucket);
+            console.log('Bucket is', bucket);
             return <Card key={bucket.id} data={bucket} />;
           })}
         </div>
