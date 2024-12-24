@@ -38,8 +38,8 @@ export default function Hero() {
   // Fetch gas fees based on selected network
   const fetchGasFees = async (chainId: number) => {
     try {
-      const apiKey = "26e00aef0ae84df09deae009fa6c34a5"; // Replace with your API key.
-      const apiKeySecret = "1xhqaPBGG4cu8AZ3aRKosEeRU00r0AQ4lJcGaARuI5Y3M7WmVmK4sw"; // Replace with your API key secret.
+      const apiKey = process.env.NEXT_PUBLIC_API_KEY; // Replace with your API key.
+      const apiKeySecret = process.env.NEXT_PUBLIC_API_KEY_SECRET; // Replace with your API key secret.
       const Auth = Buffer.from(apiKey + ":" + apiKeySecret).toString("base64");
 
       const { data } = await axios.get(
